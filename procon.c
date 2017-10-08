@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "twister.c"
 
 #define MAX_ITEMS 32
@@ -16,8 +17,8 @@ void* producer();
 void* consumer();
 void createItem();
 void addItem();
-void removeItem();
-void checkStatus();
+struct Item removeItem();
+void updateStatus();
 int getValInRange(int min, int max);
 /*Mersenne's Twister code was borrowed from
 http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c 
@@ -72,13 +73,14 @@ void* producer() {
 		
 		//Create new item and add item to buffer
 		//Buffer should check state after every add
+		addItem();
 
 		pthread_cond_signal(&condConsumer);
 		pthread_mutex_unlock(&mutex);
 
 		//Producer should get a random value
 		//Then sleep for that time
-		printf("Producer zzz...\n");
+		sleep( 5 );	//Change me
 	}
 
 	pthread_exit(0);	//Finished
@@ -96,13 +98,16 @@ void* consumer() {
 		//Remove an item from buffer and update waitTime
 		//Buffer should update state after every consume
 		//Report item's number
+		struct Item consumed;
+		consumed = removeItem();
+
+		printf("Consumed number %f! Sleeping for %d seconds...\n", consumed.number, consumed.wait);
 
 		pthread_cond_signal(&condProducer);
 		pthread_mutex_unlock(&mutex);
 		
 		//Consumer should sleep for a period of time taken from last item consumed
-		//sleep
-		printf("Consumer zzz...\n");
+		sleep( consumed.wait );
 	}
 
 	pthread_exit(0);	//Finished
@@ -123,24 +128,71 @@ int getValInRange(int min, int max) {
 }
 
 void createItem() {
-	//Generate a random value for item's number
+	//Generate a random value above 0 for item's number 
 	
 	//Generate a random value between 2 and 9 for item's wait
 }
 
 void addItem() {
+	//Do nothing if buffer is full
+	if (bufferState == 2)
+		return;
 	//Adds an item to the buffer
-
+	int i = 0;
+	for (i = 0; i < MAX_ITEMS - 1; i++) {
+		if (buffer[i].number == 0) {
+			//Space available
+			buffer[i].number = 1.0;
+			buffer[i].wait = 1;
+			printf("Updated buffer spot %d with %f!\n", i, buffer[i].number);
+			break;
+		}
+	}
 	//Update buffer status
+	updateStatus();
 }
 
-void removeItem() {
+struct Item removeItem() {
 	//Remove an item from the buffer
+	if (bufferState == 0)
+		return;
 
+	//Get item and set buffer item number to 0
+	int i = 0;
+	struct Item ret;
+
+	//Grab first available item
+	for (i = 0; i < MAX_ITEMS - 1; i++) {
+		if (buffer[i].number != 0) {
+			//Get data then reset item
+			ret.number = buffer[i].number;
+			ret.wait = buffer[i].wait;
+			buffer[i].number = 0;
+			buffer[i].wait = 0;
+			printf("Removed buffer spot %d with %f!\n", i, ret.number);
+			break;
+		}
+	}
 	//Update buffer status
+	updateStatus();
+	//Return item
+	return ret;
 }
 
-void checkStatus() {
+void updateStatus() {
 	//Used to update buffer status
 	//0 - empty		1 - contains items but not full		2 - full
+	int i = 0;
+	int count = 0;
+	for (i = 0; i < MAX_ITEMS; i++) {
+		if (buffer[i].number != 0)
+			count++;
+	}
+	//Determine state
+	if (count == 0)
+		bufferState = 0;
+	else if (count == (MAX_ITEMS-1))
+		bufferState = 2;
+	else
+		bufferState = 1;
 }
