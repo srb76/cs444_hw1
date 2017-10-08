@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>
 #include "twister.c"
 
 #define MAX_ITEMS 32
@@ -15,11 +16,10 @@
 //Function declarations
 void* producer();
 void* consumer();
-void createItem();
 void addItem();
 struct Item removeItem();
 void updateStatus();
-int getValInRange(int min, int max);
+double getValInRange(int min, int max);
 /*Mersenne's Twister code was borrowed from
 http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c 
 */
@@ -28,7 +28,7 @@ void init_genrand(unsigned long s);
 
 struct Item {
 	double number;
-	int wait;
+	double wait;
 };
 
 //Global vars
@@ -36,6 +36,7 @@ struct Item buffer[MAX_ITEMS];
 int bufferState = 0;	//0 - Empty		1 - Contains items but not full		2 - Full
 pthread_mutex_t mutex;
 pthread_cond_t condConsumer, condProducer;
+int many = 0;
 
 /*This code (main, producer, consumer) was adapted from 
 http://cis.poly.edu/cs3224a/Code/ProducerConsumerUsingPthreads.c
@@ -80,7 +81,7 @@ void* producer() {
 
 		//Producer should get a random value
 		//Then sleep for that time
-		sleep( 5 );	//Change me
+		sleep( getValInRange(3,7) );
 	}
 
 	pthread_exit(0);	//Finished
@@ -101,7 +102,9 @@ void* consumer() {
 		struct Item consumed;
 		consumed = removeItem();
 
-		printf("Consumed number %f! Sleeping for %d seconds...\n", consumed.number, consumed.wait);
+		printf("Consumed number %f! Sleeping for %f seconds...\n", consumed.number, consumed.wait);
+		many++;
+		printf("Consumed %d items so far...\n\n", many);
 
 		pthread_cond_signal(&condProducer);
 		pthread_mutex_unlock(&mutex);
@@ -113,24 +116,21 @@ void* consumer() {
 	pthread_exit(0);	//Finished
 }
 
-int getValInRange(int min, int max) {
+double getValInRange(int min, int max) {
 	//Uses Mersenne's Twister to generate a random value in range
 	double rand = 0;
-	int result = 0;
-	unsigned long s = 4658346; //seed
+	double val = max;
+	time_t seed = time(NULL);
+	unsigned long s = seed; //seed
 	init_genrand(s);
-	rand = genrand_real2();
 
-	//Grab smaller value from rand
+	//Multiply val by range, then check if greater than min
+	do {
+		rand = genrand_real2();
+		val = (max*rand);
+	} while (val <= min);
 
-
-	return result;
-}
-
-void createItem() {
-	//Generate a random value above 0 for item's number 
-	
-	//Generate a random value between 2 and 9 for item's wait
+	return val;
 }
 
 void addItem() {
@@ -142,9 +142,9 @@ void addItem() {
 	for (i = 0; i < MAX_ITEMS - 1; i++) {
 		if (buffer[i].number == 0) {
 			//Space available
-			buffer[i].number = 1.0;
-			buffer[i].wait = 1;
-			printf("Updated buffer spot %d with %f!\n", i, buffer[i].number);
+			buffer[i].number = getValInRange(100,1000);
+			buffer[i].wait = getValInRange(2,9);
+			//printf("Updated buffer spot %d with %f!\n", i, buffer[i].number);
 			break;
 		}
 	}
@@ -169,7 +169,7 @@ struct Item removeItem() {
 			ret.wait = buffer[i].wait;
 			buffer[i].number = 0;
 			buffer[i].wait = 0;
-			printf("Removed buffer spot %d with %f!\n", i, ret.number);
+			//printf("Removed buffer spot %d with %f!\n", i, ret.number);
 			break;
 		}
 	}
