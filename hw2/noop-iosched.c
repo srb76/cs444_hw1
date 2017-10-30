@@ -20,7 +20,18 @@ static void noop_merged_requests(struct request_queue *q, struct request *rq,
 
 static int noop_dispatch(struct request_queue *q, int force)
 {
+		//Save head position
 	struct noop_data *nd = q->elevator->elevator_data;
+	printk("WHATS UPPPPPPPPPPPPPPPPPPPPPPPP THIS IS THE NOOP DISPATCH FUNCTION REEEEEEEEEEEEEEEEE\n");
+	unsigned long long sector = 0;
+	struct request *rq;
+	rq = list_entry(nd->queue.next, struct request, queuelist);
+	list_del_init(&rq->queuelist);
+	//elv_dispatch_sort(q, rq);
+	sector = blk_rq_pos(rq);
+	printk("sector: %llu\n", sector);
+
+
 
 	if (!list_empty(&nd->queue)) {
 		struct request *rq;
@@ -35,6 +46,7 @@ static int noop_dispatch(struct request_queue *q, int force)
 static void noop_add_request(struct request_queue *q, struct request *rq)
 {
 	struct noop_data *nd = q->elevator->elevator_data;
+	printk("WHATS UPPPPPPPPPPPPPPPPPPPPPPPP THIS IS THE NOOP ADDDDDDDDDDDDDDDDDDDDDDDDDDDD FUNCTION REEEEEEEEEEEEEEEEE\n");
 
 	list_add_tail(&rq->queuelist, &nd->queue);
 }
