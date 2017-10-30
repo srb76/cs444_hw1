@@ -32,8 +32,7 @@ static int sstf_dispatch(struct request_queue *q, int force)
 		list_del_init(&rq->queuelist);
 		elv_dispatch_sort(q, rq);
 
-		/*
-			//Print if reading or writing at sector position
+		//Print if reading or writing at sector position
 		
 		if (rq_data_dir(rq) == 0)	//returns 0 for read, nonzero for write
 			direction = 'R';
@@ -41,11 +40,11 @@ static int sstf_dispatch(struct request_queue *q, int force)
 			direction = 'W';
 
 		sector = blk_rq_pos(rq);
-		printk("IO: %c at sector %d.",direction,sector);
+		printk("IO dispatch: %c at sector %d.",direction,sector);
 		
 		//Save head position
 		sd->head = sector;
-		*/
+
 		return 1;
 	}
 	return 0;

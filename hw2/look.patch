@@ -1,0 +1,66 @@
+diff -u block/Kconfig.iosched block1/Kconfig.iosched
+--- block/Kconfig.iosched	2017-10-29 21:26:59.755820417 -0700
++++ block1/Kconfig.iosched	2017-10-29 21:29:18.238177970 -0700
+@@ -38,6 +38,12 @@
+ 	default n
+ 	---help---
+ 	  Enable group IO scheduling in CFQ.
++	  
++config IOSCHED_SSTF
++	tristate "SSTF CLOOK Scheduler"
++	default y
++	---help---
++	  This scheduler is a CLOOK variant of SSTF.
+ 
+ choice
+ 	prompt "Default I/O scheduler"
+@@ -54,6 +60,9 @@
+ 
+ 	config DEFAULT_NOOP
+ 		bool "No-op"
++		
++	config DEFAULT_SSTF
++		bool "SSTF" if IOSCHED_SSTF=y
+ 
+ endchoice
+ 
+@@ -62,6 +71,7 @@
+ 	default "deadline" if DEFAULT_DEADLINE
+ 	default "cfq" if DEFAULT_CFQ
+ 	default "noop" if DEFAULT_NOOP
++	default "sstf" if DEFAULT_SSTF
+ 
+ endmenu
+ 
+diff -u block/Makefile block1/Makefile
+--- block/Makefile	2017-10-03 18:22:04.885204440 -0700
++++ block1/Makefile	2017-10-29 21:29:19.936206810 -0700
+@@ -18,6 +18,7 @@
+ obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
++obj-$(CONFIG_IOSCHED_CFQ)	+= sstf-iosched.c
+ 
+ obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
+ obj-$(CONFIG_BLK_CMDLINE_PARSER)	+= cmdline-parser.o
+diff -u block/noop-iosched.c block1/noop-iosched.c
+--- block/noop-iosched.c	2017-10-29 21:30:13.030108563 -0700
++++ block1/noop-iosched.c	2017-10-29 20:55:00.494376834 -0700
+@@ -36,6 +36,7 @@
+ {
+ 	struct noop_data *nd = q->elevator->elevator_data;
+ 
++	printk("WHATS UPPPPPPPPPPPPPPPPPPPPPPPP THIS IS THE NOOP DISPATCH FUNCTION REEEEEEEEEEEEEEEEE\n");
+ 	list_add_tail(&rq->queuelist, &nd->queue);
+ }
+ 
+@@ -64,6 +65,7 @@
+ 	struct noop_data *nd;
+ 	struct elevator_queue *eq;
+ 
++	printk("WHATS UPPPPPPPPPPPPPPPPPPPPPPPP THIS IS THE NOOP DISPATCH FUNCTION REEEEEEEEEEEEEEEEE\n");
+ 	eq = elevator_alloc(q, e);
+ 	if (!eq)
+ 		return -ENOMEM;
+Common subdirectories: block/partitions and block1/partitions
+Only in block1: sstf-iosched.c
