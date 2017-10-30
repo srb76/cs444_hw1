@@ -1,5 +1,6 @@
 /*
  * elevator sstf
+ * A modified version of noop-iosched.c
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -10,6 +11,7 @@
 
 struct sstf_data {
 	struct list_head queue;
+	int head;
 };
 
 static void sstf_merged_requests(struct request_queue *q, struct request *rq,
@@ -20,18 +22,18 @@ static void sstf_merged_requests(struct request_queue *q, struct request *rq,
 
 static int sstf_dispatch(struct request_queue *q, int force)
 {
-	struct sstf_data *nd = q->elevator->elevator_data;
+	struct sstf_data *sd = q->elevator->elevator_data;
 	char direction = 'Z';
 	int sector = 0;
 
-	if (!list_empty(&nd->queue)) {
+	if (!list_empty(&sd->queue)) {
 		struct request *rq;
-		rq = list_entry(nd->queue.next, struct request, queuelist);
+		rq = list_entry(sd->queue.next, struct request, queuelist);
 		list_del_init(&rq->queuelist);
 		elv_dispatch_sort(q, rq);
 
 		/*
-			Print if reading or writing at sector position
+			//Print if reading or writing at sector position
 		
 		if (rq_data_dir(rq) == 0)	//returns 0 for read, nonzero for write
 			direction = 'R';
@@ -40,6 +42,9 @@ static int sstf_dispatch(struct request_queue *q, int force)
 
 		sector = blk_rq_pos(rq);
 		printk("IO: %c at sector %d.",direction,sector);
+		
+		//Save head position
+		sd->head = sector;
 		*/
 		return 1;
 	}
@@ -48,7 +53,7 @@ static int sstf_dispatch(struct request_queue *q, int force)
 
 static void sstf_add_request(struct request_queue *q, struct request *rq)
 {
-	struct sstf_data *nd = q->elevator->elevator_data;
+	struct sstf_data *sd = q->elevator->elevator_data;
 
 	/*
 		C-LOOK logic
@@ -56,18 +61,41 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 		Examine the sector of requests, if greater add to request queue
 
 		list_add_tail to add to queue
-		blk_rq_pos or rq_end_sector? for checking sector position
+		blk_rq_pos or rq_esd_sector? for checking sector position
 	*/
-
-	list_add_tail(&rq->queuelist, &nd->queue);
+	
+	struct list_head *s;
+	struct request *head_req = list_entry(rq)
+	int head = blk_rq_pos();
+	
+	//Get entry and determine position
+	list_for_each(s, &sd->queue) {
+		struct request *s_rq = list_entry(s, struct request, queuelist);
+		
+		if(blk_rq_pos(rq) >= sd->head) {
+			//find queue position s where request belongs
+			if(sd->head > blk_rq_pos(s_rq))
+				break;	//stop when reaching sector before head
+			else if(blk_rq_pos(s_rq) > blk_rq_pos(rq))
+				break;	//stop when finding greater sector value
+			//Otherwise continue navigating for each
+		}
+		else {	//Find position in sector before head
+			if( (sd->head > blk_rq_pos(s_rq)) && (blk_rq_pos(s_rq) > blk_rq_pos(rq)) )
+				break;
+		}
+	}
+	
+	//Alway attempt to add after s index
+	list_add_tail(&rq->queuelist, s);
 }
 
 static struct request *
 sstf_former_request(struct request_queue *q, struct request *rq)
 {
-	struct sstf_data *nd = q->elevator->elevator_data;
+	struct sstf_data *sd = q->elevator->elevator_data;
 
-	if (rq->queuelist.prev == &nd->queue)
+	if (rq->queuelist.prev == &sd->queue)
 		return NULL;
 	return list_entry(rq->queuelist.prev, struct request, queuelist);
 }
@@ -75,30 +103,30 @@ sstf_former_request(struct request_queue *q, struct request *rq)
 static struct request *
 sstf_latter_request(struct request_queue *q, struct request *rq)
 {
-	struct sstf_data *nd = q->elevator->elevator_data;
+	struct sstf_data *sd = q->elevator->elevator_data;
 
-	if (rq->queuelist.next == &nd->queue)
+	if (rq->queuelist.next == &sd->queue)
 		return NULL;
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
 
 static int sstf_init_queue(struct request_queue *q, struct elevator_type *e)
 {
-	struct sstf_data *nd;
+	struct sstf_data *sd;
 	struct elevator_queue *eq;
 
 	eq = elevator_alloc(q, e);
 	if (!eq)
 		return -ENOMEM;
 
-	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
-	if (!nd) {
+	sd = kmalloc_node(sizeof(*sd), GFP_KERNEL, q->node);
+	if (!sd) {
 		kobject_put(&eq->kobj);
 		return -ENOMEM;
 	}
-	eq->elevator_data = nd;
+	eq->elevator_data = sd;
 
-	INIT_LIST_HEAD(&nd->queue);
+	INIT_LIST_HEAD(&sd->queue);
 
 	spin_lock_irq(q->queue_lock);
 	q->elevator = eq;
@@ -108,10 +136,10 @@ static int sstf_init_queue(struct request_queue *q, struct elevator_type *e)
 
 static void sstf_exit_queue(struct elevator_queue *e)
 {
-	struct sstf_data *nd = e->elevator_data;
+	struct sstf_data *sd = e->elevator_data;
 
-	BUG_ON(!list_empty(&nd->queue));
-	kfree(nd);
+	BUG_ON(!list_empty(&sd->queue));
+	kfree(sd);
 }
 
 static struct elevator_type elevator_sstf = {
