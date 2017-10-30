@@ -1,0 +1,46 @@
+\documentclass[letterpaper,10pt,fleqn]{article}
+
+\def\name{Group 45}
+
+\parindent = 0.0 in
+\parskip = 0.2 in
+
+\title{Homework 2}
+\author{group 45: Jack Neff and Sam Bonner}
+
+\begin{document}
+\maketitle
+\hrule
+
+\section*{Design Plan}
+
+In order to implement our LOOK I/O scheduler, we planned to use a C-LOOK algorithm. We designed our scheduler to examine requests and order such that they are placed in an order that operates like the C-LOOK algorithm. This means that we have a integer representing the sector position of 
+
+\section{Version Control Log and Work Log}
+ 
+
+\section*{Questions}
+\begin{enumerate}
+\item What do you think the main point of this assignment is?
+
+This assignment was intended to guide us into investigating and learning about how I/O schedulers, the Linux block layer, and elevator algorithms operate.
+
+\item How did you personally approach the problem? Design decisions, algorithm, etc. 
+
+We first examined the NO-OP I/O scheduler and researched how LOOK and C-LOOK algorithms operated. We chose to implement a C-LOOK algorithm as it seemed to be simpler to understand and optimize. After learning how Linux list heads were implemented, and after examining how the elevator.c functions operated, we decided to implement our C-LOOK scheduler by examining the sector position of each request currently in the queue and comparing it against the sector position of the request to be added to the queue. We implemented logic to place requests ahead of the current head's sector position in a sorted order in front of the current head, and requests the are behind the current head's sector position after those requests in sorted order. This caused requests to be dispatched while travelling in one direction and then jumping back to the earliest sector position to travel in that direction again. This logic and implementation modelled a C-LOOK approach to I/O scheduling.
+
+\item How did you ensure your solution was correct? Testing details, for instance. 
+
+We made use of printk statements inside the dispatch and add request functions to report what sector positions they were reading or writing to. We examined this output to prove that our requests were being dispatched in a C-LOOK model.
+
+\item What did you learn? 
+
+We learned about how the block layer, elevator algorithms, and I/O schedulers operate to organize and carry out read and write requests on a drive.
+
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\end{thebibliography}
+
+\end{document}
