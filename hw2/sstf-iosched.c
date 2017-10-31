@@ -25,7 +25,6 @@ static int sstf_dispatch(struct request_queue *q, int force)
 	struct sstf_data *sd = q->elevator->elevator_data;
 	char direction = 'Z';
 	int sector = 0;
-
 	if (!list_empty(&sd->queue)) {
 		struct request *rq;
 		rq = list_entry(sd->queue.next, struct request, queuelist);
@@ -40,7 +39,7 @@ static int sstf_dispatch(struct request_queue *q, int force)
 			direction = 'W';
 
 		sector = blk_rq_pos(rq);
-		printk("@@@@@@@@@IO dispatch: %c at sector %d.@@@@@@@@@@@@@@\n",direction,sector);
+		printk("----- IO dispatch: %c at sector %d.\n",direction,sector);
 		
 		//Save head position
 		sd->head = sector;
@@ -53,17 +52,18 @@ static int sstf_dispatch(struct request_queue *q, int force)
 static void sstf_add_request(struct request_queue *q, struct request *rq)
 {
 	struct sstf_data *sd = q->elevator->elevator_data;
-
 	/*
 		C-LOOK logic
 
-		Examine the sector of requests, compare against existing entries
-		If a req's sector position is before the head sector position,
-		place it after all requests that are after the head position.
+		Examine the sector of requests, if greater add to request queue
 
+		list_add_tail to add to queue
+		blk_rq_pos or rq_esd_sector? for checking sector position
 	*/
 	
 	struct list_head *s;
+	//struct request *head_req = list_entry();
+	//int head = blk_rq_pos();
 	
 	//Get entry and determine position
 	list_for_each(s, &sd->queue) {
@@ -82,9 +82,10 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 				break;
 		}
 	}
-	
+	int sector = 0;
+	sector = blk_rq_pos(rq);	
+	printk("----- IO add at sector %d.\n",sector);
 	//Alway attempt to add after s index
-	printk("Request added.\n");
 	list_add_tail(&rq->queuelist, s);
 }
 
