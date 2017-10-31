@@ -12,6 +12,11 @@
 \maketitle
 \hrule
 
+\section*{Abstract}
+
+This paper is the writeup submission for Group 45's HW2 assignment. This includes the design plan, version control / work log, and question responses for a C-LOOK implementation of an I/O scheduler.
+
+\pagebreak
 \section*{Design Plan}
 
 In order to implement our LOOK I/O scheduler, we planned to use a C-LOOK algorithm. We designed our scheduler to examine requests and order them such that they are placed in an order that operates like the C-LOOK algorithm. This means that we have a integer representing the sector position of the last request dispatched, called head, as a member of the sstf data struct. This head value is compared against the block position of the newest request, such that requests with a sector position after the current head are placed in an ordered fashion in the front segment of the queue, and requests with a block position behind the head are placed at the back segment of the queue. This means requests will be dispatched in one direction, then the head will return to the next earliest sector position, and do another sweep of all requests positioned after that.
@@ -36,6 +41,10 @@ We made use of printk statements inside the dispatch and add request functions t
 \item What did you learn? 
 
 We learned about how the block layer, elevator algorithms, and I/O schedulers operate to organize and carry out read and write requests on a drive. We also learned how to disable the virtual I/O used on our previous qemu command line.
+
+\item How should the TA evaluate your work? Provide detailed steps to prove correctness.
+
+
 
 \end{enumerate}
 
