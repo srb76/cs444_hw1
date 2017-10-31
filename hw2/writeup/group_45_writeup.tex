@@ -61,6 +61,8 @@ In order to implement our LOOK I/O scheduler, we planned to use a C-LOOK algorit
 \hline 11 &  & 2017-10-29 & Added backup and first patch file & 2 & 91 & 0 \\
 \hline 12 &  & 2017-10-29 & Removed comments / added print statements from sstf & 1 & 3 & 4 \\
 \hline 13 &  & 2017-10-29 & Adding writeup file & 1 & 1 & 0 \\
+\hline 13 &  & 2017-10-29 & Adding writeup file & 1 & 1 & 0 \\
+
 \end{longtable}
 
 \section*{Questions}
@@ -83,7 +85,13 @@ We learned about how the block layer, elevator algorithms, and I/O schedulers op
 
 \item How should the TA evaluate your work? Provide detailed steps to prove correctness.
 
+First run make menuconfig and select the sstf scheduler.
 
+TA should use our patchfile to patch the Kernel, and then boot it with the following qemu command line (assuming you have the core-image...ext4 file in files, and your current directory contains the linux-yocto-3.19 directory:
+
+qemu-system-i386 -gdb tcp::5545 -nographic -S -kernel linus-yocto-3.19/arch/i386/boot/bzImage -drive files/core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rwconsole=ttyS0 debug"
+
+Now navigate to /var/log/ in the kernel and cat the file 'messages.' This will show a series of print statements printed by the scheduler, indicating adds and dispatches and the sectors the occur in. You will notice that when queued, dispatches always follow the elevator-algorithm of C-LOOK. 
 
 \end{enumerate}
 
