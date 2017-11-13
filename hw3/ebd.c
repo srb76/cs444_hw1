@@ -71,6 +71,8 @@ static void ebd_transfer(struct ebd_device *dev, sector_t sector,
 		unsigned long nsect, char *buffer, int write) {
 	unsigned long offset = sector * logical_block_size;
 	unsigned long nbytes = nsect * logical_block_size;
+	
+	int i = 0;
 
 	if ((offset + nbytes) > dev->size) {
 		printk (KERN_NOTICE "ebd: Beyond-end write (%ld %ld)\n", offset, nbytes);
@@ -93,13 +95,20 @@ static void ebd_transfer(struct ebd_device *dev, sector_t sector,
 		key_set = true;
 	}
 	
-	if (write) { //Writing data. Encrypt then save in data.
+	if (write) { //Writing data. Encrypt from buffer then save in data.
 		//Encrypt byte by byte
-		memcpy(dev->data + offset, buffer, nbytes);
+		for(i=0;i<nbytes;i=(crypto_cipher_blocksize(aes)+i)) {
+			crypto_cipher_encrypt_one(aes,dev->data+offset+i, buffer+i);
+		}
+		
+		//memcpy(dev->data + offset, buffer, nbytes);
 	}
-	else { //Reading data. Decrypt then place into buffer
+	else { //Reading data. Decrypt from data then place into buffer
 		//Decrypt byte by byte
-		memcpy(buffer, dev->data + offset, nbytes);
+		for(i=0;i<nbytes;i=(crypto_cipher_blocksize(aes)+i)) {
+			crypto_cipher_decrypt_one(aes,dev->data+offset+i, buffer+i);
+		}
+		//memcpy(buffer, dev->data + offset, nbytes);
 	}
 }
 
