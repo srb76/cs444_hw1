@@ -106,7 +106,7 @@ static void ebd_transfer(struct ebd_device *dev, sector_t sector,
 	else { //Reading data. Decrypt from data then place into buffer
 		//Decrypt byte by byte
 		for(i=0;i<nbytes;i=(crypto_cipher_blocksize(aes)+i)) {
-			crypto_cipher_decrypt_one(aes,dev->data+offset+i, buffer+i);
+			crypto_cipher_decrypt_one(aes,buffer+i,dev->data+offset+i);
 		}
 		//memcpy(buffer, dev->data + offset, nbytes);
 	}
