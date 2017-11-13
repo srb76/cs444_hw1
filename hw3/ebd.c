@@ -1,5 +1,5 @@
 /*
- A modified version of ebd.c that includes ECB encryption.
+ A modified version of ebd.c that includes AES encryption.
  Obtained from: http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/
 Samuel Bonner and Jack Neff 
  *
@@ -37,7 +37,10 @@ module_param(nsectors, int, 0);
 static char key[4];
 module_param(key, char, 0);
 
+//Add cipher struct and cipher key values
+struct crypto_cipher *aes;
 static int key_size = 32;
+static bool key_set = false;
 
 /*
  * We can tweak our hardware sector size, but the kernel talks to us
@@ -62,7 +65,7 @@ static struct ebd_device {
 
 /*
  * Handle an I/O request.
- * Added initialization of crypto, setting key, and encrypting / decrypting.
+ * Added setting of crypto key, and encrypting / decrypting.
  */
 static void ebd_transfer(struct ebd_device *dev, sector_t sector,
 		unsigned long nsect, char *buffer, int write) {
@@ -74,12 +77,28 @@ static void ebd_transfer(struct ebd_device *dev, sector_t sector,
 		return;
 	}
 	
-	//Initialize crypto, set key
+	//Set key if flag is not set
+	if(!key_set) {
+		//Clear then set key
+		//crypto_cipher_clear_flags(aes,0); //try using if key is not setting correctly
+		
+		//Check key and use default if invalid
+		int length = strlen(key);
+		if( length != 4 )
+			key = "abcd";
+		
+		//Set key
+		printk("EBD.c : Using key %s\n",key);
+		crypto_cipher_setkey(aes,key,strlen(key));
+		key_set = true;
+	}
 	
 	if (write) { //Writing data. Encrypt then save in data.
+		//Encrypt byte by byte
 		memcpy(dev->data + offset, buffer, nbytes);
 	}
 	else { //Reading data. Decrypt then place into buffer
+		//Decrypt byte by byte
 		memcpy(buffer, dev->data + offset, nbytes);
 	}
 }
@@ -168,13 +187,19 @@ static int __init ebd_init(void) {
 	set_capacity(Device.gd, nsectors);
 	Device.gd->queue = Queue;
 	add_disk(Device.gd);
+	
+	//Initialize AES cipher
+	aes = crypto_alloc_cipher("aes",0,16);
+	printk("Allocated AES cipher.\n");
 
 	return 0;
 
+//Added freeing of cipher
 out_unregister:
 	unregister_blkdev(major_num, "ebd");
 out:
 	vfree(Device.data);
+	crypto_free_cipher(aes);
 	return -ENOMEM;
 }
 
