@@ -33,13 +33,13 @@ static int logical_block_size = 512;
 module_param(logical_block_size, int, 0);
 static int nsectors = 1024; /* How big the drive is */
 module_param(nsectors, int, 0);
-// *Added key parameter. 32 (8 * 4) bit key
-static char key[4];
-module_param(key, char, 0);
+// *Added key parameter.
+static char* key = "abcd";
+module_param(key, charp, 0444); //character pointer and world-readable
 
 //Add cipher struct and cipher key values
 struct crypto_cipher *aes;
-static int key_size = 32;
+//static int key_size = 0;
 static bool key_set = false;
 
 /*
