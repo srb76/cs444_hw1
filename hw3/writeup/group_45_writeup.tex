@@ -1,0 +1,93 @@
+\documentclass[letterpaper,10pt,fleqn]{article}
+\usepackage{longtable,hyperref}
+\newcommand{\longtableendfoot}
+
+\parindent = 0.0 in
+\parskip = 0.2 in
+
+\title{Homework 3 - CS444 Fall 2017}
+\author{group 45: Jack Neff and Sam Bonner}
+
+\begin{document}
+\maketitle
+\hrule
+
+\section*{Abstract}
+
+This paper is the writeup submission for Group 45's HW3 assignment. This includes the design plan, version control / work log, and question responses for a RAM disk device driver that encrypts writes and decrypts reads.
+
+\pagebreak
+\section*{Design Plan}
+
+In order to implement our encrypted block device, we will utilize the sbd driver available here: \url{http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/}
+
+\section*{Version Control Log and Work Log}
+ 
+ \begin{tabular}{lp{8cm}}
+  \label{tabular:legend:git-log}
+  \textbf{acronym} & \textbf{meaning} \\
+  V & \texttt{version} \\
+  tag & \texttt{git tag} \\
+  MF & Number of \texttt{modified files}. \\
+  AL & Number of \texttt{added lines}. \\
+  DL & Number of \texttt{deleted lines}. \\
+\end{tabular}
+
+\bigskip
+
+\begin{longtable}{|rllp{8cm}rrr|}
+\hline \multicolumn{1}{|c}{\textbf{V}} & \multicolumn{1}{c}{\textbf{tag}}
+& \multicolumn{1}{c}{\textbf{date}}
+& \multicolumn{1}{c}{\textbf{commit message}} & \multicolumn{1}{c}{\textbf{MF}}
+& \multicolumn{1}{c}{\textbf{AL}} & \multicolumn{1}{c|}{\textbf{DL}} \\ \hline
+\endhead
+
+\hline \multicolumn{7}{|r|}{\longtableendfoot} \\ \hline
+\endfoot
+
+\hline% \hline
+\endlastfoot
+
+\hline 1 &  & 2017-10-27 & Added initial hw2 files & 10 & 778 & 507 \\
+\hline 2 &  & 2017-10-28 & Added unaltered Kconifg.iosched and Makefile from block directory & 2 & 93 & 0 \\
+\hline 3 &  & 2017-10-29 & Added sstf scheduler to Kconfig.iosched and Makefile & 2 & 11 & 0 \\
+\hline 4 &  & 2017-10-29 & Added logic for sstf / C-LOOK algorithm & 1 & 48 & 20 \\
+\hline 5 &  & 2017-10-29 & Added backup of Kconfig.iosched & 2 & 69 & 1 \\
+\hline 6 &  & 2017-10-29 & Added backup and first patch file & 2 & 91 & 0 \\
+\hline 7 &  & 2017-10-29 & Removed comments / added print statements from sstf & 1 & 3 & 4 \\
+\hline 8 &  & 2017-10-29 & Adding writeup file & 1 & 1 & 0 \\
+\hline 9 &  & 2017-10-30 & Fixed makefile, added writeup and printk statements & 4 & 52 & 73 \\
+\hline 10 &  & 2017-10-30 & Added sector print statement to noop-iosched.c for testing & 1 & 12 & 0 \\
+\hline 11 &  & 2017-10-30 & Updated writeup for hw2 & 2 & 4 & 4 \\
+\hline 12 &  & 2017-10-30 & Added print statement for addrequest, got rid of unnecessary prints. & 3 & 129 & 8 \\
+\hline 13 &  & 2017-10-30 & Added abstract section and title page & 1 & 9 & 0 \\
+\hline 14 &  & 2017-10-30 & Added log tex file havent appended to writeup yet. & 1 & 40 & 0 \\
+\hline 15 &  & 2017-10-30 & Added table to tex file & 3 & 41 & 158 \\
+\hline 16 &  & 2017-10-30 & Edited tex file & 1 & 8 & 0 \\
+
+\end{longtable}
+
+\section*{Questions}
+\begin{enumerate}
+\item What do you think the main point of this assignment is?
+
+
+
+\item How did you personally approach the problem? Design decisions, algorithm, etc. 
+
+
+
+\item How did you ensure your solution was correct? Testing details, for instance. 
+
+
+
+\item What did you learn? 
+
+
+
+\item How should the TA evaluate your work? Provide detailed steps to prove correctness.
+
+
+
+\end{enumerate}
+\end{document}
