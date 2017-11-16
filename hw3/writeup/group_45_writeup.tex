@@ -19,7 +19,8 @@ This paper is the writeup submission for Group 45's HW3 assignment. This include
 \pagebreak
 \section*{Design Plan}
 
-In order to implement our encrypted block device, we will utilize the sbd driver available here: \url{http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/}
+In order to implement our encrypted block device, we will utilize the sbd driver available here: \newline
+\url{http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/}
 We will use AES encryption from crypto.h to encrypt our reads and writes in the sbd transfer function. In order to use encryption, we will first need to initialize the AES cipher within the program's init function, and set the key obtained from a module parameter. To encrypt reads and writes, we will attempt to encrypt byte by byte, by utilizing the crypto cipher encrypt one function in crypto.h.
 
 \section*{Version Control Log and Work Log}
@@ -36,6 +37,35 @@ We will use AES encryption from crypto.h to encrypt our reads and writes in the 
 
 \bigskip
 
+\begin{longtable}{|rllp{8cm}rrr|}
+\hline \multicolumn{1}{|c}{\textbf{V}} & \multicolumn{1}{c}{\textbf{tag}}
+& \multicolumn{1}{c}{\textbf{date}}
+& \multicolumn{1}{c}{\textbf{commit message}} & \multicolumn{1}{c}{\textbf{MF}}
+& \multicolumn{1}{c}{\textbf{AL}} & \multicolumn{1}{c|}{\textbf{DL}} \\ \hline
+\endhead
+
+\hline \multicolumn{7}{|r|}{\longtableendfoot} \\ \hline
+\endfoot
+
+\hline% \hline
+\endlastfoot
+
+\hline 1 &  & 2017-11-12 & Added module c files to Github & 2 & 366 & 0 \\
+\hline 2 &  & 2017-11-12 & Added initialization of cipher and setting key & 1 & 28 & 3 \\
+\hline 3 &  & 2017-11-12 & Added encryption / decryption byte by byte & 1 & 13 & 4 \\
+\hline 4 &  & 2017-11-12 & Changed decryption function to save into buffer & 1 & 1 & 1 \\
+\hline 5 &  & 2017-11-13 & Implemented changes from Patterson's blog & 1 & 5 & 4 \\
+\hline 6 &  & 2017-11-13 & Changed key module parameter & 1 & 4 & 4 \\
+\hline 7 &  & 2017-11-14 & Added first draft of writeup & 1 & 93 & 0 \\
+\hline 8 &  & 2017-11-14 & Added proj3, basically an sbd.c copy for debugging & 2 & 240 & 0 \\
+\hline 9 &  & 2017-11-14 & Added proj3, basically an sbd.c copy for debugging & 2 & 0 & 16 \\
+\hline 10 &  & 2017-11-14 & Rough draft writeup & 1 & 4 & 34 \\
+\hline 11 &  & 2017-11-15 & finalized module code & 1 & 186 & 160 \\
+\hline 12 &  & 2017-11-15 & Added info to design plan & 1 & 1 & 0 \\
+\hline 13 &  & 2017-11-15 & Added title section ebd.c & 1 & 5 & 2 \\
+
+\end{longtable}
+
 \section*{Questions}
 \begin{enumerate}
 \item What do you think the main point of this assignment is?
@@ -44,7 +74,7 @@ The main point of this assignment is to teach us about block devices, modules, a
 
 \item How did you personally approach the problem? Design decisions, algorithm, etc. 
 
-We decided the first order of business would be figuring out how to get a module (or any file for that matter, something we had yet to accomplish) onto the vm from the os2 server. Once we had this methodology down we were able to freely build new modules on os2 and then transfer them into a running vm where we could test them. For design, we found superpat's blog with a simple block driver for 2.6 Kernel, and then way down in the comments we found this guy Sarge who had updates a few lines to port the driver to the 3.2 kernel. Bingo, all that was left was encryption. For the encryption, we did some pretty standard print statement debugging and internet searching to understand the syntax of the crypto functions. From there it just took some analysis of the sbd_request function to realize where to place them.
+We decided the first order of business would be figuring out how to get a module (or any file for that matter, something we had yet to accomplish) onto the vm from the os2 server. Once we had this methodology down we were able to freely build new modules on os2 and then transfer them into a running vm where we could test them. For design, we found superpat's blog with a simple block driver for 2.6 Kernel, and then way down in the comments we found this guy Sarge who had updates a few lines to port the driver to the 3.2 kernel. Bingo, all that was left was encryption. For the encryption, we did some pretty standard print statement debugging and internet searching to understand the syntax of the crypto functions. From there it just took some analysis of the sbd request function to realize where to place them.
 
 
 \item How did you ensure your solution was correct? Testing details, for instance. 
@@ -58,7 +88,9 @@ We learned how to configure a block device driver into a kernel, how to scp betw
 
 \item How should the TA evaluate your work? Provide detailed steps to prove correctness.
 
-
+Start in the vm. SCP the module into the root directory. Then do the following:
+1. insmod 10000
+2. 
 
 \end{enumerate}
 \end{document}
