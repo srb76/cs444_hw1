@@ -1,6 +1,9 @@
 /*
  * A sample, extra-simple block driver. Updated for kernel 2.6.31.
  *
+ *	A modified version of the sbd.c from http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/
+ *  CS444 HW3 - Samuel Bonner and Jack Neff
+ *
  * (C) 2003 Eklektix, Inc.
  * (C) 2010 Pat Patterson <pat at superpat dot com>
  * Redistributable under the terms of the GNU GPL.
@@ -90,7 +93,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 
     if (write){
 		printk("writing\n");
-	encrypt = true;
+		encrypt = true;
         src = buffer;
         dst = dev->data + offset;
 		
@@ -101,7 +104,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 
     } else {
     	printk("reading\n");
-	encrypt = false;
+		encrypt = false;
         dst = buffer;
         src = dev->data + offset;
         
