@@ -1,9 +1,6 @@
 /*
  * A sample, extra-simple block driver. Updated for kernel 2.6.31.
  *
- *	A modified version of the sbd.c from http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/
- *  CS444 HW3 - Samuel Bonner and Jack Neff
- *
  * (C) 2003 Eklektix, Inc.
  * (C) 2010 Pat Patterson <pat at superpat dot com>
  * Redistributable under the terms of the GNU GPL.
@@ -34,11 +31,10 @@ static int nsectors = 1024; /* How big the drive is */
 module_param(nsectors, int, 0);
 //AES Cipher and key values
 struct crypto_cipher *aes;
-static char *key = "abcde";
+static char *key = "123456789012345678901234567890123456";
 static bool key_set = false;
 
 module_param(key, charp, 0400);
-static int key_length = 5;
 
 
 /*
@@ -59,6 +55,7 @@ static struct sbd_device {
     unsigned long size;
     spinlock_t lock;
     u8 *data;
+    u8 key[32];
     struct gendisk *gd;
 } Device;
 
@@ -76,11 +73,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 	bool encrypt = true;
 	
 	//Check and set aes key from module parameter
-	if(!key_set) {
-		printk("Setting key to %s.\n",key);
-		crypto_cipher_setkey(aes, key, key_length);
-		key_set = true;
-	}
+	crypto_cipher_setkey(aes, key, 32);
 
 	//Print sector, offset, and byte info
     printk("%ld sectors \n", nsect);
@@ -93,7 +86,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 
     if (write){
 		printk("writing\n");
-		encrypt = true;
+	encrypt = true;
         src = buffer;
         dst = dev->data + offset;
 		
@@ -104,7 +97,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 
     } else {
     	printk("reading\n");
-		encrypt = false;
+	encrypt = false;
         dst = buffer;
         src = dev->data + offset;
         
@@ -191,8 +184,9 @@ static void sbd_request(struct request_queue *q) {
     static int __init sbd_init(void) {
         /*
          * Set up our internal device.
-         */
-        Device.size = nsectors * logical_block_size;
+         */ 
+        aes = crypto_alloc_cipher("aes", 4, 4);
+	Device.size = nsectors * logical_block_size;
         spin_lock_init(&Device.lock);
         Device.data = vmalloc(Device.size);
         if (Device.data == NULL)
@@ -228,7 +222,6 @@ static void sbd_request(struct request_queue *q) {
         add_disk(Device.gd);
 		
 		//Initialize aes cipher
-        aes = crypto_alloc_cipher("aes", 0, 0);
 
         return 0;
 
