@@ -56,11 +56,12 @@ In order to implement our best-fit allocation algorithm, we decided to modify th
 \begin{enumerate}
 \item What do you think the main point of this assignment is?
 
-
+The main point of this assignment is to have us research and understand how memory is managed and allocated in the SLOB allocator. We also are intended to learn how to implement our own system calls and use them to test our implementations in the kernel.
 
 \item How did you personally approach the problem? Design decisions, algorithm, etc. 
 
-
+We decided to examine the existing slob.c implementation and modify its page allocation function to search for the best fit in free memory rather than the first possible fit. We did so by iterating through pages in memory, and saving the relevant data (previously implemented in the function) to any location that had less wasted memory than the last best fit. We would iterate until an exact fit was found, or when we reached the last candidate location. If no location could be found with enough memory requested, we would have the function return NULL. 
+After finding the data for the best fit, we reused the existing code for allocation after reassigning the best values to those that would have previously been the first fit values.
 
 \item How did you ensure your solution was correct? Testing details, for instance. 
 
@@ -68,11 +69,12 @@ In order to implement our best-fit allocation algorithm, we decided to modify th
 
 \item What did you learn? 
 
-
+We learned how system calls are implemented in the Linux kernel, and how they are invoked within the user space. We also learned how a slab allocator searches for available memory and allocates it to kernel objects.
 
 \item How should the TA evaluate your work? Provide detailed steps to prove correctness.
 
-
+Ensure that the SLOB allocator is chosen in the menuconfig. In order to do so:
+make menuconfig, navigate to General Setup, select the Choose Slab Allocator option, and set it to SLOB.
 
 \end{enumerate}
 \end{document}
