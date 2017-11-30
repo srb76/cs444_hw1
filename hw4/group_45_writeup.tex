@@ -1,0 +1,78 @@
+\documentclass[letterpaper,10pt,fleqn]{article}
+\usepackage{longtable,hyperref}
+\newcommand{\longtableendfoot}
+
+\parindent = 0.0 in
+\parskip = 0.2 in
+
+\title{Homework 3 - CS444 Fall 2017}
+\author{group 45: Jack Neff and Sam Bonner}
+
+\begin{document}
+\maketitle
+\hrule
+
+\section*{Abstract}
+
+This paper is the writeup submission for Group 45's HW4 assignment. This includes the design plan, version control / work log, and question responses for a modification of slob.c to implement a best-fit allocation algorithm.
+
+\pagebreak
+\section*{Design Plan}
+
+In order to implement our best-fit allocation algorithm, we decided to modify the function slob\_page\_alloc. We plan to modify the existing for loop that iterates through pages looking for the first fit, and instead use that for loop to find the best fit page. We will do this by keeping track of the current closest match, and compare subsequent pages against this closest fit. If we find a page that exactly fits, we will interrupt the for loop there, as there will be no closer match. Once we have found our best fit, we will reuse the logic currently present to fragment the head or unlink the page.
+
+\section*{Version Control Log and Work Log}
+ 
+ \begin{tabular}{lp{8cm}}
+  \label{tabular:legend:git-log}
+  \textbf{acronym} & \textbf{meaning} \\
+  V & \texttt{version} \\
+  tag & \texttt{git tag} \\
+  MF & Number of \texttt{modified files}. \\
+  AL & Number of \texttt{added lines}. \\
+  DL & Number of \texttt{deleted lines}. \\
+\end{tabular}
+
+\bigskip
+
+\begin{longtable}{|rllp{8cm}rrr|}
+\hline \multicolumn{1}{|c}{\textbf{V}} & \multicolumn{1}{c}{\textbf{tag}}
+& \multicolumn{1}{c}{\textbf{date}}
+& \multicolumn{1}{c}{\textbf{commit message}} & \multicolumn{1}{c}{\textbf{MF}}
+& \multicolumn{1}{c}{\textbf{AL}} & \multicolumn{1}{c|}{\textbf{DL}} \\ \hline
+\endhead
+
+\hline \multicolumn{7}{|r|}{\longtableendfoot} \\ \hline
+\endfoot
+
+\hline% \hline
+\endlastfoot
+
+\hline 1 &  & 2017-11-29 & Placeholder table & 0 & 0 & 0 \\
+
+\end{longtable}
+
+\section*{Questions}
+\begin{enumerate}
+\item What do you think the main point of this assignment is?
+
+
+
+\item How did you personally approach the problem? Design decisions, algorithm, etc. 
+
+
+
+\item How did you ensure your solution was correct? Testing details, for instance. 
+
+
+
+\item What did you learn? 
+
+
+
+\item How should the TA evaluate your work? Provide detailed steps to prove correctness.
+
+
+
+\end{enumerate}
+\end{document}
