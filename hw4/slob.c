@@ -62,6 +62,8 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
+#include <linux/syscalls.h>
+#include <linux/linkage.h>
 
 #include <linux/mm.h>
 #include <linux/swap.h> /* struct reclaim_state */
@@ -78,7 +80,7 @@
 
 #include "slab.h"
 
-#include <limits.h>
+#include <linux/limits.h>
 /*
  * slob_block has a field 'units', which indicates size of block if +ve,
  * or offset of next block if -ve (in SLOB_UNITs).
@@ -92,6 +94,9 @@ typedef s16 slobidx_t;
 #else
 typedef s32 slobidx_t;
 #endif
+
+//For system call
+long mem_slob_free = 0;
 
 struct slob_block {
 	slobidx_t units;
@@ -222,8 +227,9 @@ static void slob_free_pages(void *b, int order)
  */
 static void *slob_page_alloc(struct page *sp, size_t size, int align)
 {
-	slob_t *prev, *cur, *aligned = NULL; //current values
+	slob_t *prev, *cur, *next, *aligned = NULL; //current values
 	int delta = 0, units = SLOB_UNITS(size);
+	slobidx_t avail;
 	
 	slob_t *bprev, *bcur, *baligned = NULL; //best values
 	slobidx_t bavail;
@@ -233,7 +239,7 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 	int bestspace = INT_MAX;
 
 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
-		slobidx_t avail = slob_units(cur);
+		avail = slob_units(cur);
 		curspace = (avail - units - delta);
 		
 		if (align) {
@@ -241,16 +247,15 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 			delta = aligned - cur;
 		}
 		//Changes below, check if best fit or better fit
-		if (bestspace > curspace) { //Closest fit
+		if ( (bestspace > curspace) && (curspace >= 0)) { //Closest fit so far
 			//assign as best
 			bprev = prev;
 			bcur = cur;
 			baligned = aligned;
 			bdelta = delta;
 			bavail = avail;
-			break;
 		}
-		if (curspace = 0)
+		if (curspace == 0)
 			break; //already found best
 
 		//take current best value if last
@@ -263,7 +268,7 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 		return NULL;
 	
 	//need to reassign vals from cur
-	if(curspace != 0) {
+	if( (curspace > 0)) {
 		prev = bprev;
 		cur = bcur;
 		aligned = baligned;
@@ -667,6 +672,10 @@ struct kmem_cache kmem_cache_boot = {
 	.flags = SLAB_PANIC,
 	.align = ARCH_KMALLOC_MINALIGN,
 };
+
+asmlinkage long sys_slob_mem_use(void){
+	return mem_slob_free;
+}
 
 void __init kmem_cache_init(void)
 {
