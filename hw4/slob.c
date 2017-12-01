@@ -240,13 +240,14 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 
 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
 		avail = slob_units(cur);
-		curspace = (avail - units - delta);
 		
 		if (align) {
 			aligned = (slob_t *)ALIGN((unsigned long)cur, align);
 			delta = aligned - cur;
 		}
 		//Changes below, check if best fit or better fit
+		curspace = (avail - units - delta);
+		
 		if ( (bestspace > curspace) && (curspace >= 0)) { //Closest fit so far
 			//assign as best
 			bprev = prev;
