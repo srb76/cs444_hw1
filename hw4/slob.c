@@ -255,6 +255,7 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 			baligned = aligned;
 			bdelta = delta;
 			bavail = avail;
+			bestspace = curspace;
 		}
 		if (curspace == 0)
 			break; //already found best
