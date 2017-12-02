@@ -95,9 +95,6 @@ typedef s16 slobidx_t;
 typedef s32 slobidx_t;
 #endif
 
-//For system call
-long mem_slob_free = 0;
-
 struct slob_block {
 	slobidx_t units;
 };
@@ -681,7 +678,24 @@ struct kmem_cache kmem_cache_boot = {
 };
 
 asmlinkage long sys_slob_mem_use(void){
-	return mem_slob_free;
+	long bigpages = 0; /*big pages*/
+	long medpages = 0; /*big pages*/
+	long smallpages = 0; /*big pages*/
+	long size = 0;
+	struct list_head *head; /* head temp */
+	struct page *cursor;
+	unsigned long flags;
+
+	spin_lock_irqsave(&slob_lock, flags);
+
+	head = &free_slob_small;
+	list_for_each_entry(cursor, head, lru) {
+		smallpages++;
+	}
+
+	spin_unlock_irqrestore(&slob_lock, flags);
+
+	return smallpages;
 }
 
 void __init kmem_cache_init(void)
