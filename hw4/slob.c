@@ -1,5 +1,5 @@
 /*
- * Modified slob.c to implement a best fit algorithm
+ * Modified slob.c to implement a bcur fit algorithm
  *
  * Group 45 - Samuel Bonner and Jack Neff
  *
@@ -227,84 +227,89 @@ static void slob_free_pages(void *b, int order)
  */
 static void *slob_page_alloc(struct page *sp, size_t size, int align)
 {
-	slob_t *prev, *cur, *next, *aligned = NULL; //current values
-	int delta = 0, units = SLOB_UNITS(size);
-	slobidx_t avail;
+	//Current values
+	slob_t *prev, *cur, *aligned = NULL;
+	int delta = 0, units = SLOB_UNITS(size), totalData;
+	//Best values
+	slob_t *bprev = NULL, *bcur = NULL, *bnext;
+	int bdelta = SLOB_UNITS(size);
 	
-	slob_t *bprev, *bcur, *baligned = NULL; //best values
-	slobidx_t bavail;
-	int bdelta = 0;
-	
-	int curspace = 0;
-	int bestspace = INT_MAX;
+	slobidx_t avail; //define outside for loop
 
+	//printk("[SLOB.C] ------");
+	
+	//Use for loop to go search all pages for exact fit or best fit
 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
 		avail = slob_units(cur);
-		
+
 		if (align) {
 			aligned = (slob_t *)ALIGN((unsigned long)cur, align);
 			delta = aligned - cur;
 		}
-		//Changes below, check if best fit or better fit
-		curspace = (avail - units - delta);
-		
-		if ( (bestspace > curspace) && (curspace >= 0)) { //Closest fit so far
-			//assign as best
-			bprev = prev;
-			bcur = cur;
-			baligned = aligned;
-			bdelta = delta;
-			bavail = avail;
-			bestspace = curspace;
+
+		totalData = delta + units;
+
+		//If fit
+		if(avail >= totalData){
+			//Update best values
+			if(bcur == NULL || ((avail - totalData) < bdelta)) {
+				bprev = prev;
+				bcur = cur;
+				bdelta = avail - totalData;
+			}
 		}
-		if (curspace == 0)
-			break; //already found best
+		
+		//Stop if perfect fit
+		if(bdelta == 0){
+				break;
+			}
 
-		//take current best value if last
-		if (slob_last(cur))
-			break;
-	}
-	
-	//stop if no space
-	if(bcur == NULL)
-		return NULL;
-	
-	//need to reassign vals from cur
-	if( (curspace > 0)) {
-		prev = bprev;
-		cur = bcur;
-		aligned = baligned;
-		delta = bdelta;
-		avail = bavail;
-	}
-	
-	if (delta) { /* need to fragment head to align? */
-				next = slob_next(cur);
-				set_slob(aligned, avail - delta, next);
-				set_slob(cur, delta, aligned);
-				prev = cur;
-				cur = aligned;
-				avail = slob_units(cur);
+		if(slob_last(cur)){
+			break; //if no perfect fit was found, stop searching
+		}
 	}
 
-	next = slob_next(cur);
-	if (avail == units) { /* exact fit? unlink. */
-		if (prev)
-			set_slob(prev, slob_units(prev), next);
-		else
-			sp->freelist = next;
-	} else { /* fragment */
-		if (prev)
-			set_slob(prev, slob_units(prev), cur + units);
-		else
-			sp->freelist = cur + units;
-		set_slob(cur + units, avail - units, next);
+	if (bcur != NULL) { 
+		//Reset values like in previous for loop, assume alignment
+		avail = slob_units(bcur);
+		aligned = (slob_t *)ALIGN((unsigned long)bcur, align);
+		delta = aligned - bcur;
+
+		//Reuse old code, but with best values
+		if (delta) { /* need to fragment head to align? */
+			bnext = slob_next(bcur);
+			set_slob(aligned, avail - delta, bnext);
+			set_slob(bcur, delta, aligned);
+			bprev = bcur;
+			bcur = aligned;
+			avail = slob_units(bcur);
+		}
+
+		bnext = slob_next(bcur);
+		if (avail == units) { /* exact fit? unlink. */
+			if (bprev)
+				set_slob(bprev, slob_units(bprev), bnext);
+			else
+				sp->freelist = bnext;
+		} else { /* fragment */
+			if (bprev)
+				set_slob(bprev, slob_units(bprev), bcur + units);
+			else
+				sp->freelist = bcur + units;
+			set_slob(bcur + units, avail - units, bnext);
+		}
+
+		sp->units -= units;
+		if (!sp->units)
+			clear_slob_page_free(sp);
+		return bcur;
 	}
 
-	sp->units -= units;
-	if (!sp->units)
-		clear_slob_page_free(sp);
-	return cur;
+	
+	
+	
+	return NULL;
+	
 }
 
 /*
