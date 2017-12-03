@@ -65,7 +65,7 @@ After finding the data for the best fit, we reused the existing code for allocat
 
 \item How did you ensure your solution was correct? Testing details, for instance. 
 
-
+To ensure our solution was correct, we designed a system call to report amount of memory in use.
 
 \item What did you learn? 
 
@@ -75,6 +75,12 @@ We learned how system calls are implemented in the Linux kernel, and how they ar
 
 Ensure that the SLOB allocator is chosen in the menuconfig. In order to do so:
 make menuconfig, navigate to General Setup, select the Choose Slab Allocator option, and set it to SLOB.
+
+To patch first fit for comparison, move the ff.patch file outside your linux-yocto-3.19/ directory and run: patch -s -p0 < ff.patch
+<How to run test program and interpret output>
+
+To patch best fit for comparison, move the bf.patch file outside your linux-yocto-3.19/ directory and run: patch -s -p0 < bf.patch
+Follow the previous steps to run the test program and compare the output to the first fit output.
 
 \end{enumerate}
 \end{document}
